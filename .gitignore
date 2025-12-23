@@ -1,2 +1,4 @@
 .ipynb_checkpoints/
 .env
+data/
+my_kobert_model/
