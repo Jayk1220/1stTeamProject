@@ -1,8 +1,0 @@
-주가지수크롤링_동적 => krxstockcrawling_selenium_...
-	함수 1개
-		- crawl_job
-주가지수크롤링_api => krxstockcrawling_api
-	함수 2개 
-		- crawling_input_date : 입력된 날짜의 데이터 출력 (※ 주의 : 확인용이라 데이터 출력까지)
-					날짜형식 yyyymmdd, 예 20251201
-		- crawling_to_yesterday : 당일까지(실제론 어제자 데이터까지) csv로 저장
