@@ -2,3 +2,4 @@
 .env
 data/
 my_kobert_model/
+db/
