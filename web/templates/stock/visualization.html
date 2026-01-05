@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}{{ industry }} - 주식 데이터 시각화{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-bar-chart-line"></i> {{ industry }} 산업 분석
+                    <small class="float-end">{{ start_date }} ~ {{ end_date }}</small>
+                </h4>
+            </div>
+            <div class="card-body">
+                <a href="/" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> 돌아가기
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 영역 1: 마지막날 RISK와 PREDICT 값 컬러바 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-calendar-check"></i> 영역 1: 조회기간 마지막날 지표
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6 mb-3">
+                        <h5>RISK</h5>
+                        <div id="riskColorBar" class="p-4 rounded" style="font-size: 2rem; font-weight: bold; color: white;">
+                            <span id="riskValue"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5>PREDICT</h5>
+                        <div id="predictColorBar" class="p-4 rounded" style="font-size: 2rem; font-weight: bold; color: white;">
+                            <span id="predictValue"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> 색상은 값의 크기에 따라 자동으로 변경됩니다 
+                        (RISK: 빨강=위험, 초록=안정 / PREDICT: 빨강=상승, 파랑=하락)
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 영역 2: 그래프1 - 날짜별 RISK와 PREDICT -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-graph-up"></i> 영역 2 (그래프 1): RISK vs PREDICT
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="chart1"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 영역 3: 그래프2 - 날짜별 RISK와 종가 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-graph-down"></i> 영역 3 (그래프 2): RISK vs 종가
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="chart2"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script>
+const chartData = {
+    dates: {{ dates|safe }},
+    closes: {{ closes|safe }},
+    risk: {{ risk|safe }},
+    predicts: {{ predicts|safe }}
+};
+
+// 마지막 값 추출
+const lastRisk = chartData.risk[chartData.risk.length - 1];
+const lastPredict = chartData.predicts[chartData.predicts.length - 1];
+
+// 영역1: 컬러바 설정
+function getColorForRisk(value) {
+    // RISK: 높을수록 빨강, 낮을수록 초록
+    if (value >= 20) return '#dc3545'; // 빨강 (위험)
+    if (value >= 10) return '#fd7e14'; // 주황
+    if (value >= 0) return '#ffc107';  // 노랑
+    if (value >= -10) return '#28a745'; // 초록
+    if (value >= -20) return '#20c997'; // 청록
+    return '#17a2b8'; // 파랑 (매우 안정)
+}
+
+function getColorForPredict(value) {
+    // PREDICT: 양수면 빨강(상승), 음수면 파랑(하락)
+    if (value > 0) {
+        const intensity = Math.min(Math.abs(value) / 10, 1);
+        return `rgb(${220 + intensity * 35}, ${53 * (1-intensity)}, ${69 * (1-intensity)})`;
+    } else {
+        const intensity = Math.min(Math.abs(value) / 10, 1);
+        return `rgb(${54 * (1-intensity)}, ${162 * (1-intensity)}, ${235 - intensity * 100})`;
+    }
+}
+
+// 컬러바 값 설정
+document.getElementById('riskValue').textContent = lastRisk.toFixed(2);
+document.getElementById('riskColorBar').style.backgroundColor = getColorForRisk(lastRisk);
+
+document.getElementById('predictValue').textContent = lastPredict.toFixed(2);
+document.getElementById('predictColorBar').style.backgroundColor = getColorForPredict(lastPredict);
+
+// Chart.js 공통 옵션
+const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 2.5,
+    interaction: {
+        mode: 'index',
+        intersect: false
+    },
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: {
+                boxWidth: 15,
+                font: { size: 12 }
+            }
+        },
+        tooltip: {
+            callbacks: {
+                label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    if (context.parsed.y !== null) {
+                        label += context.parsed.y.toFixed(2);
+                    }
+                    return label;
+                }
+            }
+        }
+    }
+};
+
+// 그래프1: RISK vs PREDICT (Y축 2개)
+const ctx1 = document.getElementById('chart1').getContext('2d');
+const chart1 = new Chart(ctx1, {
+    type: 'line',
+    data: {
+        labels: chartData.dates,
+        datasets: [
+            {
+                label: 'RISK',
+                data: chartData.risk,
+                borderColor: 'rgb(220, 53, 69)',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                yAxisID: 'y1',
+                tension: 0.4,
+                borderWidth: 2
+            },
+            {
+                label: 'PREDICT',
+                data: chartData.predicts,
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                yAxisID: 'y2',
+                tension: 0.4,
+                borderWidth: 2
+            }
+        ]
+    },
+    options: {
+        ...commonOptions,
+        scales: {
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: { 
+                    display: true, 
+                    text: 'RISK',
+                    font: { size: 13, weight: 'bold' }
+                },
+                grid: { 
+                    drawOnChartArea: true,
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            y2: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: { 
+                    display: true, 
+                    text: 'PREDICT',
+                    font: { size: 13, weight: 'bold' }
+                },
+                grid: { 
+                    drawOnChartArea: false
+                }
+            },
+            x: {
+                title: { 
+                    display: true, 
+                    text: '날짜',
+                    font: { size: 12 }
+                },
+                ticks: { 
+                    font: { size: 10 }, 
+                    maxRotation: 45, 
+                    minRotation: 45 
+                }
+            }
+        },
+        plugins: {
+            ...commonOptions.plugins,
+            annotation: {
+                annotations: {
+                    riskHigh: {
+                        type: 'box',
+                        yScaleID: 'y1',
+                        yMin: 20,
+                        yMax: 100,
+                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                        borderWidth: 0
+                    },
+                    riskLow: {
+                        type: 'box',
+                        yScaleID: 'y1',
+                        yMin: -100,
+                        yMax: -20,
+                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                        borderWidth: 0
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 그래프2: RISK vs 종가 (Y축 2개)
+const ctx2 = document.getElementById('chart2').getContext('2d');
+const chart2 = new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: chartData.dates,
+        datasets: [
+            {
+                label: 'RISK',
+                data: chartData.risk,
+                borderColor: 'rgb(220, 53, 69)',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                yAxisID: 'y1',
+                tension: 0.4,
+                borderWidth: 2
+            },
+            {
+                label: '종가 (CLOSE)',
+                data: chartData.closes,
+                borderColor: 'rgb(40, 167, 69)',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                yAxisID: 'y2',
+                tension: 0.4,
+                borderWidth: 2
+            }
+        ]
+    },
+    options: {
+        ...commonOptions,
+        scales: {
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: { 
+                    display: true, 
+                    text: 'RISK',
+                    font: { size: 13, weight: 'bold' }
+                },
+                grid: { 
+                    drawOnChartArea: true,
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            y2: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: { 
+                    display: true, 
+                    text: '종가',
+                    font: { size: 13, weight: 'bold' }
+                },
+                grid: { 
+                    drawOnChartArea: false
+                }
+            },
+            x: {
+                title: { 
+                    display: true, 
+                    text: '날짜',
+                    font: { size: 12 }
+                },
+                ticks: { 
+                    font: { size: 10 }, 
+                    maxRotation: 45, 
+                    minRotation: 45 
+                }
+            }
+        },
+        plugins: {
+            ...commonOptions.plugins,
+            annotation: {
+                annotations: {
+                    riskHigh: {
+                        type: 'box',
+                        yScaleID: 'y1',
+                        yMin: 20,
+                        yMax: 100,
+                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                        borderWidth: 0
+                    },
+                    riskLow: {
+                        type: 'box',
+                        yScaleID: 'y1',
+                        yMin: -100,
+                        yMax: -20,
+                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                        borderWidth: 0
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}
