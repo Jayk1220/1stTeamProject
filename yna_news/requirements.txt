@@ -1,0 +1,18 @@
+
+# 데이터 분석 기초
+numpy==1.23.5
+pandas==1.5.3
+scipy==1.10.0
+
+# 머신러닝 및 NLP (Mecab 포함)
+scikit-learn==1.2.1
+konlpy==0.6.0
+python-mecab-ko==1.3.7
+transformers==4.24.0
+torch==1.12.1
+
+# 시각화 및 유틸리티
+matplotlib==3.7.0
+seaborn==0.12.2
+tqdm==4.64.1
+python-dotenv==1.2.1
