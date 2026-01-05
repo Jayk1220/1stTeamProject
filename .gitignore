@@ -5,3 +5,7 @@ my_kobert_model/
 model_try/
 oids_20251201-20251221.zip
 data/
+__pycache__
+.venv/
+.idea/
+*.pkl
