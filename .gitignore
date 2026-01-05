@@ -10,3 +10,5 @@ web/.venv/
 .venv/
 .idea/
 *.pkl
+web/__pycache__
+web/.env
