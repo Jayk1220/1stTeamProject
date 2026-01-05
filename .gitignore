@@ -1,5 +1,6 @@
 .ipynb_checkpoints/
 .env
-data/
+https://github.com/Jayk1220/1stTeamProject/pull/32/conflict?name=.gitignore&ancestor_oid=2e66df3bc0da83173002ff79295ec3c787d3d374&base_oid=fcc52510e45efa8b66d0b083c3dbb68326fe9342&head_oid=ba7329f5ee141daafe708fdc65da9a9ffb5c794cdata/
 my_kobert_model/
+model_try/
 oids_20251201-20251221.zip
