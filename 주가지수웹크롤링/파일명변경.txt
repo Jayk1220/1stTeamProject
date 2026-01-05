@@ -1,0 +1,5 @@
+함수 추가와 import 유용성을 위해 파일명 변경
+
+	주가지수크롤링_api => krxstockcrawling_api
+
+	주가지수크롤링_동적 =>krxstockcrawling_selenium_[주의_12_27부로막힘]
