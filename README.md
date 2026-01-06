@@ -32,11 +32,11 @@
 
 ## 📑 목차
 
-[1. 프로젝트 소개]()<br>
-[2. 데이터 수집 및 분석]()<br>
-[3. 모델 개발]()<br>
-[4. 웹 서비스]()<br>
-[5. 프로젝트 결과]()<br>
+[1. 프로젝트 소개](https://github.com/Jayk1220/1stTeamProject/tree/master?tab=readme-ov-file#project-overview)<br>
+[2. 데이터 수집 및 분석](https://github.com/Jayk1220/1stTeamProject/tree/master?tab=readme-ov-file#data-preprocessing)<br>
+[3. 모델 개발](https://github.com/Jayk1220/1stTeamProject/tree/master?tab=readme-ov-file#modelling)<br>
+[4. 웹 서비스](https://github.com/Jayk1220/1stTeamProject/tree/master?tab=readme-ov-file#web-service-implementation)<br>
+[5. 프로젝트 결과](https://github.com/Jayk1220/1stTeamProject/tree/master?tab=readme-ov-file#project-results)<br>
 
 ## Project Overview
 <img width="1280" height="720" alt="Image" src="https://github.com/user-attachments/assets/03de6761-ea2b-482a-8835-5bd5684619b6" />
