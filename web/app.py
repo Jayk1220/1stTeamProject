@@ -46,8 +46,10 @@ def visualization():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     industry = request.args.get('industry')
-    market_index = request.args.get('market_index', 'KOSPI')
-    
+
+    # industry를 market_index로도 사용 (같은 값)
+    market_index = industry
+        
     # 유효성 검사
     if not all([start_date, end_date, industry]):
         return "필수 파라미터가 누락되었습니다.", 400
@@ -62,10 +64,21 @@ def visualization():
     except Exception as e:
         return f"파라미터 오류: {e}", 400
     
+    # 데이터 조회 전 디버깅 로그
+    print(f"[DEBUG] 조회 파라미터:")
+    print(f"  - start_date: {start_date}")
+    print(f"  - end_date: {end_date}")
+    print(f"  - industry: {industry}")
+    print(f"  - market_index: {market_index}")
+
     # 데이터 조회
     try:
         data = get_combined_data(start_date, end_date, industry, market_index)
+        print(f"[DEBUG] 조회된 데이터 개수: {len(data['dates'])}개")
     except Exception as e:
+        print(f"[ERROR] 데이터 조회 오류: {e}")
+        import traceback
+        traceback.print_exc()
         return f"데이터 조회 오류: {e}", 500
     
     # 데이터가 없는 경우
